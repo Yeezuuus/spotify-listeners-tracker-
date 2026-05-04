@@ -2,7 +2,7 @@ name: Daily Spotify fetch
 
 on:
   schedule:
-    - cron: '0 16 * * *'   # 12:00 PM ET (noon EDT, UTC-4)
+    - cron: '0 0 * * *'    # 8:00 PM ET (EDT, UTC-4)
   workflow_dispatch:        # also triggerable manually from GitHub UI
 
 jobs:
