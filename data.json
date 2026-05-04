@@ -23,7 +23,19 @@
     "drake": 88928853,
     "guetta": 88090128
   },
-  "2026-05-04": {
+  "2026-05-02": {
+    "bruno": 136982165,
+    "bieber": 138019688,
+    "weeknd": 115946166,
+    "rihanna": 111447199,
+    "badbunny": 102505252,
+    "taylor": 101562720,
+    "gaga": 97658182,
+    "coldplay": 91218924,
+    "drake": 89124648,
+    "guetta": 88363806
+  },
+  "2026-05-03": {
     "bruno": 137165604,
     "bieber": 139263392,
     "weeknd": 115931676,
@@ -34,5 +46,17 @@
     "coldplay": 91171670,
     "drake": 89316483,
     "guetta": 88607197
+  },
+  "2026-05-04": {
+    "bruno": 137225956,
+    "bieber": 140381301,
+    "weeknd": null,
+    "rihanna": null,
+    "badbunny": null,
+    "taylor": null,
+    "gaga": null,
+    "coldplay": null,
+    "drake": null,
+    "guetta": null
   }
 }
