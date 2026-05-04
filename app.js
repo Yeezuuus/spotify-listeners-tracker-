@@ -968,19 +968,14 @@ async function autoFill() {
 
     const todayData = DATA[today];
 
-    // Last date where every fetched artist has a non-null value
-    const lastCompleteDate = sorted().filter(d =>
-      ARTISTS.every(a => !fetched[a.key] || DATA[d][a.key] != null)
-    ).at(-1);
-    const lastCompleteData = lastCompleteDate ? DATA[lastCompleteDate] : null;
-
     // Up to date if today is complete, OR if kworb hasn't updated yet
-    // (fetched values within tolerance of last complete entry)
+    // (every fetched artist's value is within tolerance of their own last known value)
     const alreadyLogged =
       (todayData && ARTISTS.every(a => !fetched[a.key] || todayData[a.key] != null)) ||
-      (lastCompleteData && ARTISTS.every(a =>
-        !fetched[a.key] || Math.abs((lastCompleteData[a.key] ?? 0) - (fetched[a.key] ?? 0)) < AUTOFILL_TOLERANCE
-      ));
+      ARTISTS.filter(a => fetched[a.key]).every(a => {
+        const last = getLastKnown(a.key);
+        return last && Math.abs(last.value - fetched[a.key]) < AUTOFILL_TOLERANCE;
+      });
 
     if (alreadyLogged) {
       btn.textContent = 'Already up to date';
