@@ -968,29 +968,23 @@ async function autoFill() {
 
     const todayData = DATA[today];
 
-    // Up to date if today is complete, OR if kworb hasn't updated yet
-    // (every fetched artist's value is within tolerance of their own last known value)
-    const alreadyLogged =
-      (todayData && ARTISTS.every(a => !fetched[a.key] || todayData[a.key] != null)) ||
-      ARTISTS.filter(a => fetched[a.key]).every(a => {
-        const last = getLastKnown(a.key);
-        return last && Math.abs(last.value - fetched[a.key]) < AUTOFILL_TOLERANCE;
-      });
+    // Only fill artists that are missing from today's entry
+    let filled = 0;
+    ARTISTS.forEach(artist => {
+      const input = document.getElementById('in-' + artist.key);
+      if (!input || !fetched[artist.key]) return;
+      if (todayData?.[artist.key] == null) {
+        input.value = fetched[artist.key];
+        filled++;
+      }
+    });
 
-    if (alreadyLogged) {
+    if (filled === 0) {
       btn.textContent = 'Already up to date';
       btn.style.color = 'var(--muted)';
       setTimeout(() => { btn.textContent = 'Auto-fill'; btn.disabled = false; btn.style.color = ''; }, 3000);
       return;
     }
-
-    // Fill all artist inputs
-    let filled = 0;
-    ARTISTS.forEach(artist => {
-      const input = document.getElementById('in-' + artist.key);
-      if (!input) return;
-      if (fetched[artist.key]) { input.value = fetched[artist.key]; filled++; }
-    });
 
     btn.textContent = `${filled} filled · ${today.slice(5)}`;
     btn.style.color = 'var(--muted)';
