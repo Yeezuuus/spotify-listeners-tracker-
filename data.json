@@ -1,4 +1,38 @@
 {
-  "2026-04-30": { "bruno": 136924541, "bieber": 135434033, "weeknd": 115583314, "rihanna": null, "badbunny": null, "taylor": null, "gaga": null, "coldplay": null, "drake": 88954243, "guetta": null },
-  "2026-05-01": { "bruno": 136909550, "bieber": 136648778, "weeknd": 115780214, "rihanna": 111072413, "badbunny": 102473650, "taylor": 101428168, "gaga": 96929008, "coldplay": 91292605, "drake": 88928853, "guetta": 88090128 }
+  "2026-04-30": {
+    "bruno": 136924541,
+    "bieber": 135434033,
+    "weeknd": 115583314,
+    "rihanna": null,
+    "badbunny": null,
+    "taylor": null,
+    "gaga": null,
+    "coldplay": null,
+    "drake": 88954243,
+    "guetta": null
+  },
+  "2026-05-01": {
+    "bruno": 136909550,
+    "bieber": 136648778,
+    "weeknd": 115780214,
+    "rihanna": 111072413,
+    "badbunny": 102473650,
+    "taylor": 101428168,
+    "gaga": 96929008,
+    "coldplay": 91292605,
+    "drake": 88928853,
+    "guetta": 88090128
+  },
+  "2026-05-04": {
+    "bruno": 137165604,
+    "bieber": 139263392,
+    "weeknd": 115931676,
+    "rihanna": 111706681,
+    "badbunny": 102365304,
+    "taylor": 101605929,
+    "gaga": 98067356,
+    "coldplay": 91171670,
+    "drake": 89316483,
+    "guetta": 88607197
+  }
 }
