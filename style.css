@@ -325,6 +325,14 @@ input.error {
 }
 .btn-danger:hover { background: var(--danger-bg); border-color: rgba(231,76,60,0.45); }
 
+.btn-export {
+  background: transparent; color: var(--muted); border: 1px solid var(--glass-border);
+  padding: 9px 16px; border-radius: 6px; cursor: pointer;
+  font-size: 12px; font-weight: 700; transition: all 0.15s;
+  font-family: var(--font-ui);
+}
+.btn-export:hover { background: rgba(255,255,255,0.05); color: var(--accent); border-color: rgba(176,200,224,0.40); }
+
 /* ── Table ───────────────────────────────────────────────────────────── */
 .table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 14px; font-family: var(--font-ui); }
@@ -541,7 +549,7 @@ h1, .subtitle, #cards, #betCard, .footer {
   .form-artists-grid { grid-template-columns: repeat(2, 1fr); }
 
   /* Touch targets mínimos */
-  .btn, .btn-autofill, .btn-danger, .btn-today { min-height: 44px; }
+  .btn, .btn-autofill, .btn-danger, .btn-today, .btn-export { min-height: 44px; }
   input[type="date"], input[type="number"]      { padding: 11px 10px; }
 
   /* Table */
