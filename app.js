@@ -967,15 +967,19 @@ async function autoFill() {
     document.getElementById('inDate').value = today;
 
     const todayData = DATA[today];
-    const lastDate  = sorted().at(-1);
-    const lastData  = DATA[lastDate];
 
-    // Up to date if today already has complete data, OR if kworb hasn't updated yet
-    // (fetched values are within tolerance of the last saved entry)
+    // Last date where every fetched artist has a non-null value
+    const lastCompleteDate = sorted().filter(d =>
+      ARTISTS.every(a => !fetched[a.key] || DATA[d][a.key] != null)
+    ).at(-1);
+    const lastCompleteData = lastCompleteDate ? DATA[lastCompleteDate] : null;
+
+    // Up to date if today is complete, OR if kworb hasn't updated yet
+    // (fetched values within tolerance of last complete entry)
     const alreadyLogged =
       (todayData && ARTISTS.every(a => !fetched[a.key] || todayData[a.key] != null)) ||
-      (!todayData && lastData && ARTISTS.every(a =>
-        !fetched[a.key] || Math.abs((lastData[a.key] ?? 0) - (fetched[a.key] ?? 0)) < AUTOFILL_TOLERANCE
+      (lastCompleteData && ARTISTS.every(a =>
+        !fetched[a.key] || Math.abs((lastCompleteData[a.key] ?? 0) - (fetched[a.key] ?? 0)) < AUTOFILL_TOLERANCE
       ));
 
     if (alreadyLogged) {
