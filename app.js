@@ -968,7 +968,23 @@ async function autoFill() {
 
     const todayData = DATA[today];
 
-    // Only fill artists that are missing from today's entry
+    // If kworb values match the previous day within 0.5% → kworb hasn't refreshed yet
+    const prevDate = sorted().filter(d => d < today).at(-1);
+    const prevData = prevDate ? DATA[prevDate] : null;
+    const comparableArtists = ARTISTS.filter(a => fetched[a.key] && prevData?.[a.key] != null);
+    const kworkIsStale = comparableArtists.length >= 5 &&
+      comparableArtists.every(a =>
+        Math.abs(prevData[a.key] - fetched[a.key]) / prevData[a.key] < 0.005
+      );
+
+    if (kworkIsStale) {
+      btn.textContent = 'Already up to date';
+      btn.style.color = 'var(--muted)';
+      setTimeout(() => { btn.textContent = 'Auto-fill'; btn.disabled = false; btn.style.color = ''; }, 3000);
+      return;
+    }
+
+    // Fill only artists missing from today's entry
     let filled = 0;
     ARTISTS.forEach(artist => {
       const input = document.getElementById('in-' + artist.key);
