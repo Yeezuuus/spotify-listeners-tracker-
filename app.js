@@ -70,11 +70,20 @@ async function loadData() {
     if (res.ok) base = migrateData(await res.json());
   } catch (_) {}
 
-  // 2. Merge con localStorage — entradas manuales del usuario tienen prioridad
+  // 2. Merge con localStorage a nivel de artista: manual no-null gana sobre base,
+  //    pero base no-null llena huecos null del localStorage.
   const raw = localStorage.getItem('spotifyTracker_v2');
   if (raw) {
     const local = migrateData(JSON.parse(raw));
-    Object.keys(local).forEach(d => { base[d] = local[d]; });
+    Object.keys(local).forEach(d => {
+      if (!base[d]) {
+        base[d] = local[d];
+      } else {
+        ARTISTS.forEach(a => {
+          if (local[d][a.key] != null) base[d][a.key] = local[d][a.key];
+        });
+      }
+    });
   }
 
   return base;
@@ -893,11 +902,11 @@ function deleteRow(date) {
 }
 
 function resetData() {
-  if (!confirm('Reset to initial state?')) return;
-  DATA = JSON.parse(JSON.stringify(INITIAL_DATA));
-  persist(DATA);
-  renderFormGrid();
-  updateAll();
+  ARTISTS.forEach(a => {
+    const el = document.getElementById('in-' + a.key);
+    if (el) el.value = '';
+  });
+  setToday();
 }
 
 async function fetchWithProxy(targetUrl) {
@@ -948,11 +957,17 @@ async function autoFill() {
     const today = localDateStr();
     document.getElementById('inDate').value = today;
 
-    // Only flag "already up to date" if today's entry already matches the fetched values
     const todayData = DATA[today];
-    const alreadyLogged = todayData && ARTISTS.every(a =>
-      !fetched[a.key] || Math.abs((todayData[a.key] || 0) - fetched[a.key]) < AUTOFILL_TOLERANCE
-    );
+    const lastDate  = sorted().at(-1);
+    const lastData  = DATA[lastDate];
+
+    // Up to date if today already has complete data, OR if kworb hasn't updated yet
+    // (fetched values are within tolerance of the last saved entry)
+    const alreadyLogged =
+      (todayData && ARTISTS.every(a => !fetched[a.key] || todayData[a.key] != null)) ||
+      (!todayData && lastData && ARTISTS.every(a =>
+        !fetched[a.key] || Math.abs((lastData[a.key] ?? 0) - (fetched[a.key] ?? 0)) < AUTOFILL_TOLERANCE
+      ));
 
     if (alreadyLogged) {
       btn.textContent = 'Already up to date';
