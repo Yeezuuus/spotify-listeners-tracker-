@@ -50,8 +50,13 @@ async function main() {
   ARTISTS.forEach(a => { if (!(a.key in entry)) entry[a.key] = null; });
 
   const dataPath = path.join(__dirname, '..', 'data.json');
-  const data     = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
-  data[today]    = entry;
+  let data = {};
+  try {
+    data = JSON.parse(fs.readFileSync(dataPath, 'utf8'));
+  } catch (e) {
+    console.warn('data.json not found or invalid, starting fresh:', e.message);
+  }
+  data[today] = entry;
 
   fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
   console.log(`data.json updated for ${today}.`);
