@@ -22,32 +22,30 @@ async function main() {
   const html = await res.text();
 
   // Date in ET: UTC-4 during EDT (summer), UTC-5 during EST (winter)
-  const now    = new Date();
-  const etOffset = isDST(now) ? -4 : -5;
-  const etDate = new Date(now.getTime() + etOffset * 3600 * 1000);
-  const today  = etDate.toISOString().split('T')[0];
+  const now       = new Date();
+  const etOffset  = isDST(now) ? -4 : -5;
+  const etDate    = new Date(now.getTime() + etOffset * 3600 * 1000);
+  const today     = etDate.toISOString().split('T')[0];
 
   console.log(`ET date: ${today}`);
 
-  const entry = {};
+  const fetched = {};
   ARTISTS.forEach(artist => {
     const escaped = artist.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const match   = html.match(new RegExp(escaped + '[\\s\\S]{0,400}?(\\d{2,3},\\d{3},\\d{3})', 'i'));
     if (match) {
       const n = parseInt(match[1].replace(/,/g, ''), 10);
-      if (n > 1_000_000) entry[artist.key] = n;
+      if (n > 1_000_000) fetched[artist.key] = n;
     }
   });
 
-  const filled = Object.keys(entry).length;
-  console.log(`Fetched ${filled} artists:`, entry);
+  const fetchedCount = Object.keys(fetched).length;
+  console.log(`Fetched ${fetchedCount} artists:`, fetched);
 
-  if (filled < 5) {
+  if (fetchedCount < 5) {
     console.error('Too few results — aborting to avoid corrupting data.');
     process.exit(1);
   }
-
-  ARTISTS.forEach(a => { if (!(a.key in entry)) entry[a.key] = null; });
 
   const dataPath = path.join(__dirname, '..', 'data.json');
   let data = {};
@@ -57,23 +55,44 @@ async function main() {
     console.warn('data.json not found or invalid, starting fresh:', e.message);
   }
 
-  // Abort if kworb values match the most recent entry — kworb hasn't refreshed yet
-  const dates = Object.keys(data).sort();
-  if (dates.length > 0) {
-    const lastEntry = data[dates[dates.length - 1]];
-    const comparable = ARTISTS.filter(a => entry[a.key] && lastEntry[a.key] != null);
-    const isStale = comparable.length >= 5 &&
-      comparable.every(a => Math.abs(lastEntry[a.key] - entry[a.key]) / lastEntry[a.key] < 0.005);
-    if (isStale) {
-      console.log('Kworb data unchanged since last entry — skipping update.');
-      process.exit(0);
+  // Most recent date before today
+  const prevDate  = Object.keys(data).sort().filter(d => d < today).at(-1);
+  const prevEntry = prevDate ? data[prevDate] : null;
+
+  // Per-artist staleness: only update artists where kworb value changed vs yesterday
+  const newData = {};
+  let newCount = 0;
+  ARTISTS.forEach(a => {
+    const kVal = fetched[a.key];
+    if (!kVal) return;
+    const prev  = prevEntry?.[a.key];
+    const stale = prev != null && Math.abs(prev - kVal) / prev < 0.005;
+    if (!stale) {
+      newData[a.key] = kVal;
+      newCount++;
+    } else {
+      console.log(`  ${a.key}: unchanged (${kVal.toLocaleString()}) — skipping`);
     }
+  });
+
+  if (newCount === 0) {
+    console.log('Kworb data unchanged for all artists — skipping update.');
+    process.exit(0);
   }
 
-  data[today] = entry;
+  // Merge into today's entry: new kworb data wins, existing values preserved for stale artists
+  const todayEntry = { ...(data[today] || {}) };
+  ARTISTS.forEach(a => {
+    if (newData[a.key] != null) {
+      todayEntry[a.key] = newData[a.key];
+    } else if (!(a.key in todayEntry)) {
+      todayEntry[a.key] = null;
+    }
+  });
+  data[today] = todayEntry;
 
   fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
-  console.log(`data.json updated for ${today}.`);
+  console.log(`data.json updated for ${today}: ${newCount} artist(s) with new data.`);
 }
 
 // Detect US DST: second Sunday of March → first Sunday of November
