@@ -56,6 +56,20 @@ async function main() {
   } catch (e) {
     console.warn('data.json not found or invalid, starting fresh:', e.message);
   }
+
+  // Abort if kworb values match the most recent entry — kworb hasn't refreshed yet
+  const dates = Object.keys(data).sort();
+  if (dates.length > 0) {
+    const lastEntry = data[dates[dates.length - 1]];
+    const comparable = ARTISTS.filter(a => entry[a.key] && lastEntry[a.key] != null);
+    const isStale = comparable.length >= 5 &&
+      comparable.every(a => Math.abs(lastEntry[a.key] - entry[a.key]) / lastEntry[a.key] < 0.005);
+    if (isStale) {
+      console.log('Kworb data unchanged since last entry — skipping update.');
+      process.exit(0);
+    }
+  }
+
   data[today] = entry;
 
   fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
