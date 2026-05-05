@@ -88,7 +88,10 @@ async function loadData() {
 
   return base;
 }
-function persist(d) { localStorage.setItem('spotifyTracker_v2', JSON.stringify(d)); }
+function persist(d) {
+  localStorage.setItem('spotifyTracker_v2', JSON.stringify(d));
+  pushToGithub(d);
+}
 
 let DATA = {};
 function sorted() { return Object.keys(DATA).sort(); }
@@ -1076,6 +1079,8 @@ document.querySelector('.form-box').addEventListener('keydown', e => {
 
 // ── Admin mode ─────────────────────────────────────────────────────────────
 const ADMIN_HASH = '19857514fe809744c28460e43c905bce01fd89fbb3dacf07f1295cffbc08503f';
+const GH_REPO    = 'yeezuuus/spotify-listeners-tracker-';
+const GH_FILE    = 'data.json';
 
 function isAdmin() { return sessionStorage.getItem('admin') === '1'; }
 
@@ -1083,6 +1088,33 @@ function applyAdminMode() {
   document.body.classList.toggle('admin-mode', isAdmin());
   const lock = document.getElementById('adminLock');
   if (lock) lock.textContent = isAdmin() ? '🔓' : '🔒';
+}
+
+async function pushToGithub(data) {
+  const token = localStorage.getItem('ghToken');
+  if (!token) return;
+  try {
+    const apiUrl = `https://api.github.com/repos/${GH_REPO}/contents/${GH_FILE}`;
+    const getRes = await fetch(apiUrl, {
+      headers: { 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json' }
+    });
+    if (!getRes.ok) return;
+    const { sha } = await getRes.json();
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+    await fetch(apiUrl, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `token ${token}`,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message: `data: listeners ${new Date().toISOString().split('T')[0]}`,
+        content,
+        sha
+      })
+    });
+  } catch (_) {}
 }
 
 async function toggleAdmin() {
@@ -1093,10 +1125,14 @@ async function toggleAdmin() {
   }
   const pw = prompt('');
   if (!pw) return;
-  const buf  = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
-  const hex  = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+  const hex = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
   if (hex === ADMIN_HASH) {
     sessionStorage.setItem('admin', '1');
+    if (!localStorage.getItem('ghToken')) {
+      const token = prompt('');
+      if (token && token.trim()) localStorage.setItem('ghToken', token.trim());
+    }
     applyAdminMode();
   }
 }
