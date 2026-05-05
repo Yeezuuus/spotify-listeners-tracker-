@@ -1135,10 +1135,27 @@ async function toggleAdmin() {
 }
 
 (async () => {
-  DATA = await loadData();
+  const skeleton = document.getElementById('skeleton');
+  const content  = document.getElementById('mainContent');
+  skeleton.style.display = 'block';
+  content.style.display  = 'none';
+
+  const [data] = await Promise.all([
+    loadData(),
+    new Promise(r => setTimeout(r, 800)),
+  ]);
+  DATA = data;
   renderFormGrid();
   updateAll();
   updateSwitchThumb();
   initParticles();
   applyAdminMode();
+
+  skeleton.style.display = 'none';
+  content.style.opacity  = '0';
+  content.style.display  = 'block';
+  content.style.transition = 'opacity 0.45s ease';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    content.style.opacity = '1';
+  }));
 })();
