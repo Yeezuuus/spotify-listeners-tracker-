@@ -108,3 +108,7 @@ To trigger manually: **Actions → Daily Spotify fetch → Run workflow**
 - [IBM Plex Mono](https://fonts.google.com/specimen/IBM+Plex+Mono) + [Bebas Neue](https://fonts.google.com/specimen/Bebas+Neue) fonts
 - GitHub Pages for hosting
 - GitHub Actions for scheduled data fetching
+- 
+## About this project
+This project was developed with significant AI assistance (Claude by Anthropic), 
+including code generation, architecture decisions, and documentation.
