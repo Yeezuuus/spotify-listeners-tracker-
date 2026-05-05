@@ -556,3 +556,12 @@ h1, .subtitle, #cards, #betCard, .footer {
   table    { font-size: 12px; }
   th, td   { padding: 8px 5px; }
 }
+
+/* ── Admin mode ──────────────────────────────────────────────────────────── */
+.form-box       { display: none; }
+.btn-edit       { display: none; }
+.btn-del-row    { display: none; }
+
+body.admin-mode .form-box    { display: block; }
+body.admin-mode .btn-edit    { display: inline-flex; }
+body.admin-mode .btn-del-row { display: inline-flex; }

@@ -1074,10 +1074,38 @@ document.querySelector('.form-box').addEventListener('keydown', e => {
   if (e.key === 'Enter') addData();
 });
 
+// ── Admin mode ─────────────────────────────────────────────────────────────
+const ADMIN_HASH = '19857514fe809744c28460e43c905bce01fd89fbb3dacf07f1295cffbc08503f';
+
+function isAdmin() { return sessionStorage.getItem('admin') === '1'; }
+
+function applyAdminMode() {
+  document.body.classList.toggle('admin-mode', isAdmin());
+  const lock = document.getElementById('adminLock');
+  if (lock) lock.textContent = isAdmin() ? '🔓' : '🔒';
+}
+
+async function toggleAdmin() {
+  if (isAdmin()) {
+    sessionStorage.removeItem('admin');
+    applyAdminMode();
+    return;
+  }
+  const pw = prompt('');
+  if (!pw) return;
+  const buf  = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+  const hex  = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  if (hex === ADMIN_HASH) {
+    sessionStorage.setItem('admin', '1');
+    applyAdminMode();
+  }
+}
+
 (async () => {
   DATA = await loadData();
   renderFormGrid();
   updateAll();
   updateSwitchThumb();
   initParticles();
+  applyAdminMode();
 })();
