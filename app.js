@@ -16,7 +16,6 @@ const START_DATE  = '2026-04-30';
 const MONTH_START = '2026-05-01';
 const END_DATE    = '2026-05-31';
 
-const AUTOFILL_TOLERANCE = 50000;
 const CHART_GRID_COLOR   = 'rgba(176,200,224,0.07)';
 const CHART_TICK_COLOR   = '#4a5e7a';
 const CHART_TOOLTIP = {
@@ -68,13 +67,15 @@ async function loadData() {
   try {
     const res = await fetch('./data.json');
     if (res.ok) base = migrateData(await res.json());
-  } catch (_) {}
+  } catch (e) { console.error('[loadData] failed to fetch data.json:', e); }
 
   // 2. Merge con localStorage a nivel de artista: manual no-null gana sobre base,
   //    pero base no-null llena huecos null del localStorage.
   const raw = localStorage.getItem('spotifyTracker_v2');
   if (raw) {
-    const local = migrateData(JSON.parse(raw));
+    let local;
+    try { local = migrateData(JSON.parse(raw)); } catch (e) { console.error('[loadData] corrupted localStorage, ignoring:', e); }
+    if (!local) return base;
     Object.keys(local).forEach(d => {
       if (!base[d]) {
         base[d] = local[d];
@@ -90,7 +91,7 @@ async function loadData() {
 }
 function persist(d) {
   localStorage.setItem('spotifyTracker_v2', JSON.stringify(d));
-  pushToGithub(d);
+  pushToGithub(d).catch(e => console.error('[persist] push failed:', e));
 }
 
 let DATA = {};
@@ -241,7 +242,7 @@ function renderArtistToggles() {
 function setWindow(n) {
   PROJ_WINDOW = n;
   document.querySelectorAll('.win-btn').forEach(btn => {
-    const v = btn.dataset.window === 'null' ? null : parseInt(btn.dataset.window);
+    const v = btn.dataset.window === 'null' ? null : parseInt(btn.dataset.window, 10);
     btn.classList.toggle('active', v === n);
   });
   buildMainChart();
@@ -304,6 +305,18 @@ Chart.register(crossingLinePlugin);
 
 // ── Gráficas ───────────────────────────────────────────────────────────────
 let mainChart, changeChart;
+
+const glassBarBg = (context) => {
+  const { chart, dataIndex } = context;
+  const { ctx, chartArea } = chart;
+  const c = context.dataset.borderColor?.[dataIndex] || '#888';
+  if (!chartArea) return c + '55';
+  const isNeg = (context.parsed?.y ?? 0) < 0;
+  const grad = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+  if (isNeg) { grad.addColorStop(0, c + '18'); grad.addColorStop(1, c + 'cc'); }
+  else        { grad.addColorStop(0, c + 'cc'); grad.addColorStop(1, c + '18'); }
+  return grad;
+};
 
 function buildMainChart() {
   const labels  = allLabels();
@@ -513,24 +526,6 @@ function buildChangeChart() {
   const labels = ranked.map(a => `${a.medal} ${a.name}`);
   const data   = changes.map(c => c != null ? Math.round(c / 1000) : null);
   const colors = ranked.map(a => a.color);
-
-  // backgroundColor reads borderColor so updating borderColor is enough on refresh
-  const glassBarBg = (context) => {
-    const { chart, dataIndex } = context;
-    const { ctx, chartArea } = chart;
-    const c = context.dataset.borderColor?.[dataIndex] || '#888';
-    if (!chartArea) return c + '55';
-    const isNeg = (context.parsed?.y ?? 0) < 0;
-    const grad = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-    if (isNeg) {
-      grad.addColorStop(0, c + '18');
-      grad.addColorStop(1, c + 'cc');
-    } else {
-      grad.addColorStop(0, c + 'cc');
-      grad.addColorStop(1, c + '18');
-    }
-    return grad;
-  };
 
   if (changeChart) {
     changeChart.data.labels = labels;
@@ -857,7 +852,7 @@ function validateForm() {
   ARTISTS.forEach(a => {
     const el = document.getElementById('in-' + a.key);
     if (!el) return;
-    const bad = el.value !== '' && isNaN(parseInt(el.value));
+    const bad = el.value !== '' && isNaN(parseInt(el.value, 10));
     el.classList.toggle('error', bad);
     if (bad) ok = false;
   });
@@ -885,7 +880,7 @@ function addData() {
   const entry = {};
   ARTISTS.forEach(a => {
     const v = document.getElementById('in-' + a.key).value;
-    entry[a.key] = v !== '' ? parseInt(v) : (existing[a.key] ?? null);
+    entry[a.key] = v !== '' ? parseInt(v, 10) : (existing[a.key] ?? null);
   });
   DATA[date] = entry;
   persist(DATA);
@@ -917,7 +912,9 @@ function exportData() {
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'data.json';
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
   URL.revokeObjectURL(a.href);
 }
 
@@ -935,7 +932,7 @@ async function fetchWithProxy(targetUrl) {
       // allorigins wraps in JSON; codetabs/corsproxy return raw HTML
       const text = ct.includes('json') ? (await res.json()).contents : await res.text();
       if (text && text.length > 1000) return text;
-    } catch { /* try next */ }
+    } catch (e) { console.warn('[proxy] failed:', e); }
   }
   throw new Error('All proxies failed');
 }
@@ -954,7 +951,7 @@ async function autoFill() {
       const escaped = artist.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       const match = html.match(new RegExp(escaped + '[\\s\\S]{0,400}?(\\d{2,3},\\d{3},\\d{3})', 'i'));
       if (match) {
-        const n = parseInt(match[1].replace(/,/g, ''));
+        const n = parseInt(match[1].replace(/,/g, ''), 10);
         if (n > 1_000_000) fetched[artist.key] = n;
       }
     });
@@ -1114,7 +1111,7 @@ async function pushToGithub(data) {
         sha
       })
     });
-  } catch (_) {}
+  } catch (e) { console.error('[pushToGithub] failed:', e); }
 }
 
 async function toggleAdmin() {
