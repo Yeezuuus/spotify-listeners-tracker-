@@ -59,32 +59,24 @@ async function main() {
   const prevDate  = Object.keys(data).sort().filter(d => d < today).at(-1);
   const prevEntry = prevDate ? data[prevDate] : null;
 
-  // Per-artist staleness: only update artists where kworb value changed vs yesterday
-  const newData = {};
-  let newCount = 0;
-  ARTISTS.forEach(a => {
+  // If no artist changed vs yesterday (within 0.5%), kworb hasn't updated — skip
+  const anyNew = ARTISTS.some(a => {
     const kVal = fetched[a.key];
-    if (!kVal) return;
-    const prev  = prevEntry?.[a.key];
-    const stale = prev != null && Math.abs(prev - kVal) / prev < 0.005;
-    if (!stale) {
-      newData[a.key] = kVal;
-      newCount++;
-    } else {
-      console.log(`  ${a.key}: unchanged (${kVal.toLocaleString()}) — skipping`);
-    }
+    if (!kVal) return false;
+    const prev = prevEntry?.[a.key];
+    return prev == null || Math.abs(prev - kVal) / prev >= 0.005;
   });
 
-  if (newCount === 0) {
-    console.log('Kworb data unchanged for all artists — skipping update.');
+  if (!anyNew) {
+    console.log('Kworb data unchanged — skipping update.');
     process.exit(0);
   }
 
-  // Merge into today's entry: new kworb data wins, existing values preserved for stale artists
+  // At least one artist changed → write all artists for today
   const todayEntry = { ...(data[today] || {}) };
   ARTISTS.forEach(a => {
-    if (newData[a.key] != null) {
-      todayEntry[a.key] = newData[a.key];
+    if (fetched[a.key] != null) {
+      todayEntry[a.key] = fetched[a.key];
     } else if (!(a.key in todayEntry)) {
       todayEntry[a.key] = null;
     }
@@ -92,7 +84,7 @@ async function main() {
   data[today] = todayEntry;
 
   fs.writeFileSync(dataPath, JSON.stringify(data, null, 2));
-  console.log(`data.json updated for ${today}: ${newCount} artist(s) with new data.`);
+  console.log(`data.json updated for ${today}.`);
 }
 
 // Detect US DST: second Sunday of March → first Sunday of November
