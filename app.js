@@ -367,28 +367,30 @@ function buildMainChart() {
     const artistLastIdx  = artistLastDate ? dayIndex(artistLastDate) : null;
     const artistLastVal  = artistLastDate ? DATA[artistLastDate][artist.key] : null;
 
-    // Proyección central (línea punteada): ancla en el último punto real del artista
+    // Shift para que la proyección salga suave desde el último punto real
+    const projShift = (reg && artistLastIdx !== null && artistLastVal !== null)
+      ? artistLastVal - project(reg, artistLastIdx)
+      : 0;
+
+    // Proyección central (línea punteada)
     const projection = labels.map(lbl => {
       const idx = dayIndex(lbl);
       if (!reg || artistLastIdx === null || idx < artistLastIdx) return null;
-      if (idx === artistLastIdx) return artistLastVal / 1e6;
-      return project(reg, idx) / 1e6;
+      return (project(reg, idx) + projShift) / 1e6;
     });
 
     // Banda superior
     const bandUpper = labels.map(lbl => {
       const idx = dayIndex(lbl);
       if (!reg || se === 0 || artistLastIdx === null || idx < artistLastIdx) return null;
-      if (idx === artistLastIdx) return artistLastVal / 1e6;
-      return (project(reg, idx) + se) / 1e6;
+      return (project(reg, idx) + projShift + se) / 1e6;
     });
 
     // Banda inferior
     const bandLower = labels.map(lbl => {
       const idx = dayIndex(lbl);
       if (!reg || se === 0 || artistLastIdx === null || idx < artistLastIdx) return null;
-      if (idx === artistLastIdx) return artistLastVal / 1e6;
-      return (project(reg, idx) - se) / 1e6;
+      return (project(reg, idx) + projShift - se) / 1e6;
     });
 
     datasets.push({
