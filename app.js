@@ -754,7 +754,7 @@ function renderSubtitle() {
 // ── Tabla ──────────────────────────────────────────────────────────────────
 function renderTable() {
   const dates  = sorted();
-  const ranked = getRanked();
+  const ranked = getRanked().slice(0, TOP_N);
   const top1   = ranked[0];
   const top2   = ranked[1];
   const cols   = ranked.length + 3; // date + artists + gap + edit
