@@ -1,16 +1,28 @@
 // ── Configuración ──────────────────────────────────────────────────────────
 const ARTISTS = [
-  { key: 'bruno',    name: 'Bruno Mars',    color: '#D4A94E', img: 'https://unavatar.io/youtube/brunomars',        imgPos: 'center' },
-  { key: 'bieber',   name: 'Justin Bieber', color: '#45BB7A', img: 'https://unavatar.io/youtube/JustinBieberVEVO', imgPos: 'center' },
-  { key: 'weeknd',   name: 'The Weeknd',    color: '#C96868', img: 'https://unavatar.io/youtube/TheWeekndVEVO',    imgPos: 'center top' },
-  { key: 'rihanna',  name: 'Rihanna',       color: '#D472A0', img: 'https://unavatar.io/youtube/RihannaVEVO',      imgPos: 'center' },
-  { key: 'badbunny', name: 'Bad Bunny',     color: '#D4804E', img: 'https://unavatar.io/youtube/BadBunnyPR',       imgPos: 'center' },
-  { key: 'taylor',   name: 'Taylor Swift',  color: '#9B8AEF', img: 'https://unavatar.io/youtube/TaylorSwiftVEVO',  imgPos: 'center' },
-  { key: 'gaga',     name: 'Lady Gaga',     color: '#B47EE8', img: 'https://unavatar.io/youtube/LadyGagaVEVO',     imgPos: 'center' },
-  { key: 'coldplay', name: 'Coldplay',      color: '#6AAEE8', img: 'https://unavatar.io/youtube/coldplay',         imgPos: 'center' },
-  { key: 'drake',    name: 'Drake',         color: '#8FA8BC', img: 'drake.jpg',                                    imgPos: 'center top' },
-  { key: 'guetta',   name: 'David Guetta',  color: '#3ECBC0', img: 'https://unavatar.io/youtube/davidguetta',      imgPos: 'center' },
+  { key: 'bruno',    name: 'Bruno Mars',      color: '#D4A94E', img: 'https://unavatar.io/youtube/brunomars',           imgPos: 'center' },
+  { key: 'bieber',   name: 'Justin Bieber',   color: '#45BB7A', img: 'https://unavatar.io/youtube/JustinBieberVEVO',    imgPos: 'center' },
+  { key: 'weeknd',   name: 'The Weeknd',      color: '#C96868', img: 'https://unavatar.io/youtube/TheWeekndVEVO',       imgPos: 'center top' },
+  { key: 'rihanna',  name: 'Rihanna',         color: '#D472A0', img: 'https://unavatar.io/youtube/RihannaVEVO',         imgPos: 'center' },
+  { key: 'badbunny', name: 'Bad Bunny',       color: '#D4804E', img: 'https://unavatar.io/youtube/BadBunnyPR',          imgPos: 'center' },
+  { key: 'taylor',   name: 'Taylor Swift',    color: '#9B8AEF', img: 'https://unavatar.io/youtube/TaylorSwiftVEVO',     imgPos: 'center' },
+  { key: 'gaga',     name: 'Lady Gaga',       color: '#B47EE8', img: 'https://unavatar.io/youtube/LadyGagaVEVO',        imgPos: 'center' },
+  { key: 'mj',       name: 'Michael Jackson', color: '#C8C8D8', img: 'https://unavatar.io/youtube/MichaelJacksonVEVO',  imgPos: 'center top' },
+  { key: 'coldplay', name: 'Coldplay',        color: '#6AAEE8', img: 'https://unavatar.io/youtube/coldplay',            imgPos: 'center' },
+  { key: 'drake',    name: 'Drake',           color: '#8FA8BC', img: 'drake.jpg',                                       imgPos: 'center top' },
+  { key: 'guetta',   name: 'David Guetta',    color: '#3ECBC0', img: 'https://unavatar.io/youtube/davidguetta',         imgPos: 'center' },
+  { key: 'billie',   name: 'Billie Eilish',   color: '#5EE87A', img: 'https://unavatar.io/youtube/BillieEilish',        imgPos: 'center' },
+  { key: 'ariana',   name: 'Ariana Grande',   color: '#FF9DC0', img: 'https://unavatar.io/youtube/ArianaGrandeVevo',    imgPos: 'center' },
+  { key: 'ed',       name: 'Ed Sheeran',      color: '#E8873A', img: 'https://unavatar.io/youtube/edsheeran',           imgPos: 'center' },
+  { key: 'shakira',  name: 'Shakira',         color: '#F5C518', img: 'https://unavatar.io/youtube/ShakiraVEVO',         imgPos: 'center' },
+  { key: 'katy',     name: 'Katy Perry',      color: '#FF45D8', img: 'https://unavatar.io/youtube/KatyPerryVEVO',       imgPos: 'center' },
+  { key: 'maroon5',  name: 'Maroon 5',        color: '#A83232', img: 'https://unavatar.io/youtube/Maroon5VEVO',         imgPos: 'center' },
+  { key: 'calvin',   name: 'Calvin Harris',   color: '#00CFFF', img: 'https://unavatar.io/youtube/CalvinHarris',        imgPos: 'center' },
+  { key: 'eminem',   name: 'Eminem',          color: '#9CA3AF', img: 'https://unavatar.io/youtube/EminemMusic',         imgPos: 'center' },
+  { key: 'pitbull',  name: 'Pitbull',         color: '#DAA520', img: 'https://unavatar.io/youtube/pitbull',             imgPos: 'center' },
 ];
+
+const TOP_N = 10;
 
 const START_DATE  = '2026-04-30';
 const MONTH_START = '2026-05-01';
@@ -35,7 +47,7 @@ const INITIAL_DATA = {
   '2026-05-01': { bruno: 136909550, bieber: 136648778, weeknd: 115780214, rihanna: 111072413, badbunny: 102473650, taylor: 101428168, gaga: 96929008, coldplay: 91292605, drake: 88928853, guetta: 88090128 },
 };
 
-const MEDALS = ['01','02','03','04','05','06','07','08','09','10'];
+const MEDALS = ['01','02','03','04','05','06','07','08','09','10','11','12','13','14','15','16','17','18','19','20'];
 
 function avatarImg(a, size) {
   const pos = a.imgPos || 'center';
@@ -156,21 +168,30 @@ function logRegression(xs, ys) {
 }
 function project(reg, x) { return reg.a + reg.b * Math.log(x); }
 
-let PROJ_WINDOW = null;
+let PROJ_WINDOW = 14;
 let hiddenArtists = new Set();
 let currentChartView = 'evolution';
+
+function _updateEvolutionHeader() {
+  document.getElementById('chartViewTitle').textContent = PROJ_WINDOW !== null
+    ? 'Evolution · Logarithmic projection to May 31'
+    : 'Evolution · Full history';
+  document.getElementById('legendNote').style.display = PROJ_WINDOW !== null ? '' : 'none';
+}
 
 function setChartView(view) {
   currentChartView = view;
   const evo = view === 'evolution';
-  document.getElementById('artistToggles').style.display  = evo ? '' : 'none';
-  document.getElementById('mainChartWrap').style.display  = evo ? '' : 'none';
-  document.getElementById('legendNote').style.display     = evo ? '' : 'none';
-  document.getElementById('windowSelector').style.display = evo ? '' : 'none';
+  document.getElementById('artistToggles').style.display   = evo ? '' : 'none';
+  document.getElementById('mainChartWrap').style.display   = evo ? '' : 'none';
+  document.getElementById('windowSelector').style.display  = evo ? '' : 'none';
   document.getElementById('changeChartWrap').style.display = evo ? 'none' : '';
-  document.getElementById('chartViewTitle').textContent   = evo
-    ? 'Evolution · Logarithmic projection to May 31'
-    : '24h change';
+  if (evo) {
+    _updateEvolutionHeader();
+  } else {
+    document.getElementById('chartViewTitle').textContent  = '24h change';
+    document.getElementById('legendNote').style.display    = 'none';
+  }
   document.querySelectorAll('.switch-opt').forEach(el =>
     el.classList.toggle('active', el.dataset.view === view)
   );
@@ -230,7 +251,7 @@ function continueToggleDrag(e, key) {
 }
 
 function renderArtistToggles() {
-  const ranked = getRanked();
+  const ranked = getRanked().slice(0, TOP_N);
   document.getElementById('artistToggles').innerHTML = ranked.map(a =>
     `<button class="artist-toggle" style="${_toggleStyleStr(a)}"
       onmousedown="startToggleDrag(event,'${a.key}')"
@@ -337,10 +358,12 @@ function buildMainChart() {
   const crossingLabelIdx = crossing ? labels.indexOf(crossing.date) : null;
   const crossingInRange  = crossingLabelIdx > 0 && crossing.x > lastIdx;
 
+  if (currentChartView === 'evolution') _updateEvolutionHeader();
   renderArtistToggles();
+  const showProj = PROJ_WINDOW !== null;
   const datasets = [];
 
-  getRanked().forEach((artist, artistIdx) => {
+  getRanked().slice(0, TOP_N).forEach((artist, artistIdx) => {
     const isHidden = hiddenArtists.has(artist.key);
     const reg = getRegression(artist.key);
 
@@ -368,28 +391,28 @@ function buildMainChart() {
     const artistLastVal  = artistLastDate ? DATA[artistLastDate][artist.key] : null;
 
     // Shift para que la proyección salga suave desde el último punto real
-    const projShift = (reg && artistLastIdx !== null && artistLastVal !== null)
+    const projShift = (showProj && reg && artistLastIdx !== null && artistLastVal !== null)
       ? artistLastVal - project(reg, artistLastIdx)
       : 0;
 
     // Proyección central (línea punteada)
     const projection = labels.map(lbl => {
       const idx = dayIndex(lbl);
-      if (!reg || artistLastIdx === null || idx < artistLastIdx) return null;
+      if (!showProj || !reg || artistLastIdx === null || idx < artistLastIdx) return null;
       return (project(reg, idx) + projShift) / 1e6;
     });
 
     // Banda superior
     const bandUpper = labels.map(lbl => {
       const idx = dayIndex(lbl);
-      if (!reg || se === 0 || artistLastIdx === null || idx < artistLastIdx) return null;
+      if (!showProj || !reg || se === 0 || artistLastIdx === null || idx < artistLastIdx) return null;
       return (project(reg, idx) + projShift + se) / 1e6;
     });
 
     // Banda inferior
     const bandLower = labels.map(lbl => {
       const idx = dayIndex(lbl);
-      if (!reg || se === 0 || artistLastIdx === null || idx < artistLastIdx) return null;
+      if (!showProj || !reg || se === 0 || artistLastIdx === null || idx < artistLastIdx) return null;
       return (project(reg, idx) + projShift - se) / 1e6;
     });
 
@@ -481,7 +504,7 @@ function buildMainChart() {
         },
         filter: item => item.raw !== null && !item.dataset.label.startsWith(DS.UPPER) && !item.dataset.label.startsWith(DS.LOWER),
       },
-      crossingLine: crossingInRange ? {
+      crossingLine: crossingInRange && showProj ? {
         labelIndex: crossingLabelIdx,
         color: 'rgba(255, 200, 0, 0.40)',
         text: `cross ~${crossing.date.slice(5)}`,
@@ -519,7 +542,7 @@ function buildChangeChart() {
   if (dates.length < 2) return;
   const prev    = dates[dates.length - 2];
   const curr    = dates[dates.length - 1];
-  const ranked  = getRanked();
+  const ranked  = getRanked().slice(0, TOP_N);
   const changes = ranked.map(a => {
     const c = DATA[curr][a.key], p = DATA[prev][a.key];
     return c != null && p != null ? c - p : null;
@@ -626,8 +649,8 @@ function renderCards() {
       ${duelSide(a2, 'right')}
     </div>`;
 
-  // ── Rank list: positions 3–10 ───────────────────────────────────────────
-  const list = ranked.slice(2).map(a => {
+  // ── Rank list: positions 3–TOP_N ───────────────────────────────────────
+  const list = ranked.slice(2, TOP_N).map(a => {
     const val    = curr[a.key] ?? null;
     const pval   = prev?.[a.key] ?? null;
     const change = val != null && pval != null ? val - pval : null;
