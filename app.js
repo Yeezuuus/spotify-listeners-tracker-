@@ -993,11 +993,16 @@ async function autoFill() {
 
     const todayData = DATA[today];
 
-    // If kworb values match the previous day within 0.5% → kworb hasn't refreshed yet
+    // If kworb values match yesterday's data within 0.5% → kworb hasn't refreshed yet.
+    // Only applies when comparing against yesterday — if there's a gap, skip the check.
+    const yesterday = (() => {
+      const d = new Date(); d.setDate(d.getDate() - 1);
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    })();
     const prevDate = sorted().filter(d => d < today).at(-1);
     const prevData = prevDate ? DATA[prevDate] : null;
     const comparableArtists = ARTISTS.filter(a => fetched[a.key] && prevData?.[a.key] != null);
-    const kworkIsStale = comparableArtists.length >= 5 &&
+    const kworkIsStale = prevDate === yesterday && comparableArtists.length >= 5 &&
       comparableArtists.every(a =>
         Math.abs(prevData[a.key] - fetched[a.key]) / prevData[a.key] < 0.005
       );
