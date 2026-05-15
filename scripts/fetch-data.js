@@ -77,7 +77,17 @@ async function main() {
     const sameSnapshot  = anchors.length >= 2 &&
       anchors.every(a => Math.abs(lastEntry[a.key] - fetched[a.key]) / lastEntry[a.key] < 0.005);
 
-    if (hasNulls && sameSnapshot) {
+    // Extra guard: if kworb also matches the entry *before* lastDate, kworb hasn't
+    // updated yet — filling would write stale data.
+    const prevDate2  = allDates.filter(d => d < lastDate).at(-1);
+    const prevEntry2 = prevDate2 ? data[prevDate2] : null;
+    const prevAnchors = prevEntry2
+      ? ARTISTS.filter(a => prevEntry2[a.key] != null && fetched[a.key] != null)
+      : [];
+    const kworbStale = prevAnchors.length >= 2 &&
+      prevAnchors.every(a => Math.abs(prevEntry2[a.key] - fetched[a.key]) / prevEntry2[a.key] < 0.005);
+
+    if (hasNulls && sameSnapshot && !kworbStale) {
       let filled = 0;
       ARTISTS.forEach(a => {
         if (lastEntry[a.key] == null && fetched[a.key] != null) {
