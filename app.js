@@ -214,7 +214,11 @@ function _animateChartSlide(direction, fn) {
   }, 230);
 }
 
+function _earliestDataMonth() { return sorted()[0]?.slice(0, 7); }
+
 function prevChartMonth() {
+  const earliest = _earliestDataMonth();
+  if (!earliest || chartMonth <= earliest) return;
   _animateChartSlide('prev', () => {
     chartMonth = _shiftMonth(chartMonth, -1);
     buildMainChart();
@@ -222,7 +226,9 @@ function prevChartMonth() {
   });
 }
 function nextChartMonth() {
-  if (chartMonth >= localDateStr().slice(0, 7)) return;
+  // allow up to 1 month ahead of current for projection view
+  const maxChartMonth = _shiftMonth(localDateStr().slice(0, 7), 1);
+  if (chartMonth >= maxChartMonth) return;
   _animateChartSlide('next', () => {
     chartMonth = _shiftMonth(chartMonth, 1);
     buildMainChart();
@@ -230,6 +236,8 @@ function nextChartMonth() {
   });
 }
 function prevTableMonth() {
+  const earliest = _earliestDataMonth();
+  if (!earliest || tableMonth <= earliest) return;
   tableMonth = _shiftMonth(tableMonth, -1);
   tableExpanded = false;
   renderTable();
@@ -243,16 +251,31 @@ function nextTableMonth() {
   updateTableNav();
 }
 function updateChartNav() {
-  const atCurrent = chartMonth >= localDateStr().slice(0, 7);
+  const earliest    = _earliestDataMonth();
+  const maxChartMonth = _shiftMonth(localDateStr().slice(0, 7), 1);
+  const prev = document.getElementById('chartNavPrev');
   const next = document.getElementById('chartNavNext');
-  if (next) { next.style.opacity = atCurrent ? '0.2' : ''; next.style.pointerEvents = atCurrent ? 'none' : ''; }
+  if (prev) {
+    const atEarliest = !earliest || chartMonth <= earliest;
+    prev.style.opacity = atEarliest ? '0.2' : '';
+    prev.style.pointerEvents = atEarliest ? 'none' : '';
+  }
+  if (next) {
+    const atMax = chartMonth >= maxChartMonth;
+    next.style.opacity = atMax ? '0.2' : '';
+    next.style.pointerEvents = atMax ? 'none' : '';
+  }
 }
 function updateTableNav() {
   const name = monthDisplayName(tableMonth);
   document.querySelectorAll('.table-month-name').forEach(el => el.textContent = name);
-  const atCurrent = tableMonth >= localDateStr().slice(0, 7);
+  const earliest  = _earliestDataMonth();
+  const atEarliest = !earliest || tableMonth <= earliest;
+  const atCurrent  = tableMonth >= localDateStr().slice(0, 7);
+  const prev = document.getElementById('tableNavPrev');
   const next = document.getElementById('tableNavNext');
-  if (next) { next.style.opacity = atCurrent ? '0.2' : ''; next.style.pointerEvents = atCurrent ? 'none' : ''; }
+  if (prev) { prev.style.opacity = atEarliest ? '0.2' : ''; prev.style.pointerEvents = atEarliest ? 'none' : ''; }
+  if (next) { next.style.opacity = atCurrent  ? '0.2' : ''; next.style.pointerEvents = atCurrent  ? 'none' : ''; }
 }
 function toggleTableExpand() {
   tableExpanded = !tableExpanded;

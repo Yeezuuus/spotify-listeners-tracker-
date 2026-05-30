@@ -45,7 +45,7 @@
 <div id="betCard"></div>
 
 <div class="chart-outer">
-  <button class="month-nav-outside" onclick="prevChartMonth()">&#8249;</button>
+  <button class="month-nav-outside" id="chartNavPrev" onclick="prevChartMonth()">&#8249;</button>
   <div class="chart-box" style="flex:1;min-width:0;overflow:hidden">
     <div id="chartSlideInner">
       <div class="chart-header">
@@ -86,7 +86,7 @@
 <div class="chart-box">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
     <div style="display:flex;align-items:center;gap:6px">
-      <button class="month-nav-btn" onclick="prevTableMonth()">&#8249;</button>
+      <button class="month-nav-btn" id="tableNavPrev" onclick="prevTableMonth()">&#8249;</button>
       <div class="chart-title" style="margin:0">Full history · <span class="table-month-name"></span></div>
       <button class="month-nav-btn" id="tableNavNext" onclick="nextTableMonth()">&#8250;</button>
     </div>
