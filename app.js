@@ -1311,7 +1311,6 @@ async function toggleAdmin() {
   DATA = data;
   renderFormGrid();
   updateAll();
-  updateSwitchThumb();
   initParticles();
   applyAdminMode();
 
@@ -1321,5 +1320,6 @@ async function toggleAdmin() {
   content.style.transition = 'opacity 0.45s ease';
   requestAnimationFrame(() => requestAnimationFrame(() => {
     content.style.opacity = '1';
+    updateSwitchThumb(); // must run after display:block so offsetWidth is available
   }));
 })();
