@@ -440,9 +440,17 @@ td[data-tip-neg]:hover::after { content: attr(data-tip-neg); color: var(--neg); 
   border: 1px solid var(--glass-border);
   box-shadow: inset 0 1px 0 var(--glass-shine), 0 8px 32px rgba(0,0,0,0.25);
 }
-.event { padding: 8px 0; border-bottom: 1px solid var(--glass-border); font-size: 13px; color: var(--muted); }
+.event { padding: 8px 0; border-bottom: 1px solid var(--glass-border); font-size: 13px; color: var(--muted); display: flex; align-items: baseline; gap: 8px; }
 .event:last-child { border-bottom: none; }
+.event > span:first-child, .event > .event-date { flex-shrink: 0; }
 .event-date { color: var(--accent); font-weight: 700; font-family: var(--font-ui); }
+.event-del {
+  background: transparent; border: none; color: var(--muted2); cursor: pointer;
+  font-size: 11px; padding: 1px 4px; border-radius: 3px; margin-left: auto; flex-shrink: 0;
+  transition: color 0.15s;
+}
+.event-del:hover { color: var(--neg); }
+body:not(.admin-mode) .event-del { display: none; }
 
 /* ── Helpers ─────────────────────────────────────────────────────────── */
 .pos { color: var(--pos); font-weight: 700; }

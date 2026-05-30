@@ -1179,6 +1179,85 @@ async function autoFill() {
   }, 3000);
 }
 
+// ── Key events ─────────────────────────────────────────────────────────────
+const EVENTS_KEY = 'spotifyTracker_events_v1';
+const DEFAULT_EVENTS = [
+  { id: '1', date: 'May 9–10',  text: 'Coachella weekend 1 exits the 28-day window → **Bieber starts losing listeners**' },
+  { id: '2', date: 'May 15',    text: 'Drake drops album "Iceman" → **Big Drake spike** (potentially +15-25M)' },
+  { id: '3', date: 'May 16–17', text: 'Coachella weekend 2 exits the window → **Second Bieber drop**' },
+  { id: '4', date: 'May 31',    text: 'End of month / Polymarket market resolution' },
+];
+
+function loadEvents() {
+  try {
+    const raw = localStorage.getItem(EVENTS_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return JSON.parse(JSON.stringify(DEFAULT_EVENTS));
+}
+function saveEvents(events) {
+  localStorage.setItem(EVENTS_KEY, JSON.stringify(events));
+}
+function _renderEventText(t) {
+  return t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+}
+
+function renderEvents() {
+  const el = document.getElementById('eventsSection');
+  if (!el) return;
+  const events = loadEvents();
+  const admin  = isAdmin();
+
+  let html = `<div class="chart-title">Key events</div>`;
+  events.forEach(ev => {
+    html += `<div class="event">
+      <span class="event-date">${ev.date}</span> — ${_renderEventText(ev.text)}
+      ${admin ? `<button class="event-del" onclick="deleteEvent('${ev.id}')" title="Delete">✕</button>` : ''}
+    </div>`;
+  });
+
+  if (admin) {
+    html += `
+    <div class="event-add-form" id="eventAddForm" style="display:none">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start">
+        <input type="text" id="evDate" placeholder="Date (e.g. May 15)" style="width:160px" />
+        <input type="text" id="evText" placeholder="Description (**bold** for emphasis)" style="flex:1;min-width:200px" />
+        <button class="btn-autofill" onclick="submitEvent()">Add</button>
+        <button class="btn-autofill" onclick="toggleEventForm()">Cancel</button>
+      </div>
+    </div>
+    <button class="btn-autofill" id="showEventFormBtn" onclick="toggleEventForm()" style="margin-top:10px">+ Add event</button>`;
+  }
+
+  el.innerHTML = html;
+}
+
+function toggleEventForm() {
+  const form = document.getElementById('eventAddForm');
+  const btn  = document.getElementById('showEventFormBtn');
+  if (!form) return;
+  const show = form.style.display === 'none';
+  form.style.display = show ? '' : 'none';
+  if (btn) btn.textContent = show ? '× Cancel' : '+ Add event';
+  if (show) document.getElementById('evDate')?.focus();
+}
+
+function submitEvent() {
+  const date = document.getElementById('evDate')?.value?.trim();
+  const text = document.getElementById('evText')?.value?.trim();
+  if (!date || !text) return;
+  const events = loadEvents();
+  events.push({ id: Date.now().toString(), date, text });
+  saveEvents(events);
+  renderEvents();
+}
+
+function deleteEvent(id) {
+  if (!confirm('Delete this event?')) return;
+  saveEvents(loadEvents().filter(e => e.id !== id));
+  renderEvents();
+}
+
 // ── Actualizar todo ────────────────────────────────────────────────────────
 function updateAll() {
   renderSubtitle();
@@ -1188,6 +1267,7 @@ function updateAll() {
   buildMainChart();
   buildChangeChart();
   renderTable();
+  renderEvents();
   updateChartNav();
   updateTableNav();
 }
@@ -1249,6 +1329,7 @@ function applyAdminMode() {
   document.body.classList.toggle('admin-mode', isAdmin());
   const lock = document.getElementById('adminLock');
   if (lock) lock.textContent = isAdmin() ? '🔓' : '🔒';
+  renderEvents();
 }
 
 async function pushToGithub(data) {
