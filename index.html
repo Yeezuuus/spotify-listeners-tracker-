@@ -44,32 +44,30 @@
 <div id="cards"></div>
 <div id="betCard"></div>
 
-<div class="chart-outer">
-  <button class="month-nav-outside" id="chartNavPrev" onclick="prevChartMonth()">&#8249;</button>
-  <div class="chart-box" style="flex:1;min-width:0;overflow:hidden">
-    <div id="chartSlideInner">
-      <div class="chart-header">
-        <div class="chart-title" id="chartViewTitle">Evolution · Logarithmic projection to May 31</div>
-        <div style="display:flex;gap:6px;align-items:center">
-          <div class="window-selector" id="windowSelector">
-            <button class="win-btn active" data-window="14" onclick="setWindow(14)">14d</button>
-            <button class="win-btn" data-window="7" onclick="setWindow(7)">7d</button>
-            <button class="win-btn" data-window="3" onclick="setWindow(3)">3d</button>
-          </div>
-          <div class="chart-view-switch" onclick="setChartView(currentChartView==='evolution'?'change':'evolution')">
-            <div class="switch-thumb"></div>
-            <span class="switch-opt active" data-view="evolution">Evolution</span>
-            <span class="switch-opt" data-view="change">24h</span>
-          </div>
+<div class="chart-box chart-box-nav">
+  <button class="month-nav-overlay" id="chartNavPrev" onclick="prevChartMonth()">&#8249;</button>
+  <button class="month-nav-overlay month-nav-overlay-right" id="chartNavNext" onclick="nextChartMonth()">&#8250;</button>
+  <div id="chartSlideInner">
+    <div class="chart-header">
+      <div class="chart-title" id="chartViewTitle">Evolution · Logarithmic projection to May 31</div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <div class="window-selector" id="windowSelector">
+          <button class="win-btn active" data-window="14" onclick="setWindow(14)">14d</button>
+          <button class="win-btn" data-window="7" onclick="setWindow(7)">7d</button>
+          <button class="win-btn" data-window="3" onclick="setWindow(3)">3d</button>
+        </div>
+        <div class="chart-view-switch" onclick="setChartView(currentChartView==='evolution'?'change':'evolution')">
+          <div class="switch-thumb"></div>
+          <span class="switch-opt active" data-view="evolution">Evolution</span>
+          <span class="switch-opt" data-view="change">24h</span>
         </div>
       </div>
-      <div id="artistToggles"></div>
-      <div id="mainChartWrap" class="chart-wrap"><canvas id="mainChart"></canvas></div>
-      <div class="legend-note" id="legendNote">— real data &nbsp;·&nbsp; - - - logarithmic projection &nbsp;·&nbsp; ░ ±1σ band</div>
-      <div id="changeChartWrap" class="chart-wrap" style="display:none"><canvas id="changeChart"></canvas></div>
     </div>
+    <div id="artistToggles"></div>
+    <div id="mainChartWrap" class="chart-wrap"><canvas id="mainChart"></canvas></div>
+    <div class="legend-note" id="legendNote">— real data &nbsp;·&nbsp; - - - logarithmic projection &nbsp;·&nbsp; ░ ±1σ band</div>
+    <div id="changeChartWrap" class="chart-wrap" style="display:none"><canvas id="changeChart"></canvas></div>
   </div>
-  <button class="month-nav-outside" id="chartNavNext" onclick="nextChartMonth()">&#8250;</button>
 </div>
 
 <div class="form-box">
