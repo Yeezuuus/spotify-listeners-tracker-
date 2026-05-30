@@ -126,8 +126,11 @@ function dayIndexToDate(idx) {
   return d.toISOString().split('T')[0];
 }
 function allLabels() {
-  const labels = [], end = toDate(END_DATE);
-  for (let d = toDate(START_DATE); d <= end; d.setDate(d.getDate() + 1))
+  const [y, mo] = chartMonth.split('-').map(Number);
+  const start = new Date(y, mo - 1, 1);
+  const end   = new Date(y, mo, 0);
+  const labels = [];
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1))
     labels.push(d.toISOString().split('T')[0]);
   return labels;
 }
@@ -171,10 +174,96 @@ function project(reg, x) { return reg.a + reg.b * Math.log(x); }
 let PROJ_WINDOW = 14;
 let hiddenArtists = new Set();
 let currentChartView = 'evolution';
+let chartMonth = localDateStr().slice(0, 7);  // 'YYYY-MM' — chart navigation
+let tableMonth = localDateStr().slice(0, 7);  // 'YYYY-MM' — table navigation (independent)
+let tableExpanded = false;
+
+function monthEndDate(m) {
+  const [y, mo] = m.split('-').map(Number);
+  return new Date(y, mo, 0).toISOString().split('T')[0];
+}
+function monthDisplayName(m) {
+  const [y, mo] = m.split('-').map(Number);
+  return new Date(y, mo - 1, 1).toLocaleString('en-US', { month: 'long', year: 'numeric' });
+}
+
+function _shiftMonth(m, delta) {
+  const [y, mo] = m.split('-').map(Number);
+  const d = new Date(y, mo - 1 + delta, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function _animateChartSlide(direction, fn) {
+  const inner = document.getElementById('chartSlideInner');
+  if (!inner) { fn(); return; }
+  const outX = direction === 'next' ? '-40px' : '40px';
+  const inX  = direction === 'next' ?  '40px' : '-40px';
+  inner.style.transition = 'transform 0.22s ease, opacity 0.22s ease';
+  inner.style.transform  = `translateX(${outX})`;
+  inner.style.opacity    = '0';
+  setTimeout(() => {
+    fn();
+    inner.style.transition = 'none';
+    inner.style.transform  = `translateX(${inX})`;
+    inner.style.opacity    = '0';
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      inner.style.transition = 'transform 0.22s ease, opacity 0.22s ease';
+      inner.style.transform  = 'translateX(0)';
+      inner.style.opacity    = '1';
+    }));
+  }, 230);
+}
+
+function prevChartMonth() {
+  _animateChartSlide('prev', () => {
+    chartMonth = _shiftMonth(chartMonth, -1);
+    buildMainChart();
+    updateChartNav();
+  });
+}
+function nextChartMonth() {
+  if (chartMonth >= localDateStr().slice(0, 7)) return;
+  _animateChartSlide('next', () => {
+    chartMonth = _shiftMonth(chartMonth, 1);
+    buildMainChart();
+    updateChartNav();
+  });
+}
+function prevTableMonth() {
+  tableMonth = _shiftMonth(tableMonth, -1);
+  tableExpanded = false;
+  renderTable();
+  updateTableNav();
+}
+function nextTableMonth() {
+  if (tableMonth >= localDateStr().slice(0, 7)) return;
+  tableMonth = _shiftMonth(tableMonth, 1);
+  tableExpanded = false;
+  renderTable();
+  updateTableNav();
+}
+function updateChartNav() {
+  const atCurrent = chartMonth >= localDateStr().slice(0, 7);
+  const next = document.getElementById('chartNavNext');
+  if (next) { next.style.opacity = atCurrent ? '0.2' : ''; next.style.pointerEvents = atCurrent ? 'none' : ''; }
+}
+function updateTableNav() {
+  const name = monthDisplayName(tableMonth);
+  document.querySelectorAll('.table-month-name').forEach(el => el.textContent = name);
+  const atCurrent = tableMonth >= localDateStr().slice(0, 7);
+  const next = document.getElementById('tableNavNext');
+  if (next) { next.style.opacity = atCurrent ? '0.2' : ''; next.style.pointerEvents = atCurrent ? 'none' : ''; }
+}
+function toggleTableExpand() {
+  tableExpanded = !tableExpanded;
+  renderTable();
+}
 
 function _updateEvolutionHeader() {
+  const endLabel = toDate(monthEndDate(chartMonth))
+    .toLocaleString('en-US', { month: 'long', day: 'numeric' });
   document.getElementById('chartViewTitle').textContent = PROJ_WINDOW !== null
-    ? 'Evolution · Logarithmic projection to May 31'
+    ? `Evolution · Logarithmic projection to ${endLabel}`
     : 'Evolution · Full history';
   document.getElementById('legendNote').style.display = PROJ_WINDOW !== null ? '' : 'none';
 }
@@ -607,7 +696,7 @@ function renderCards() {
   const dates  = sorted();
   const curr   = DATA[dates[dates.length - 1]];
   const prev   = dates.length > 1 ? DATA[dates[dates.length - 2]] : null;
-  const endIdx = dayIndex(END_DATE);
+  const endIdx = dayIndex(monthEndDate(chartMonth));
   const ranked = getRanked();
   const maxVal = ranked.reduce((m, a) => Math.max(m, curr[a.key] ?? 0), 0);
 
@@ -681,7 +770,7 @@ function renderBetCard() {
   const lastDate = dates[dates.length - 1];
   const curr     = DATA[lastDate];
   const lastIdx  = dayIndex(lastDate);
-  const endIdx   = dayIndex(END_DATE);
+  const endIdx   = dayIndex(monthEndDate(chartMonth));
   const ranked   = getRanked();
   const leader   = ranked[0];
   const second   = ranked[1];
@@ -711,18 +800,22 @@ function renderBetCard() {
     // Projected leader is different — find the crossing date
     const regChallenger = getRegression(projAtEnd.key);
     const cross = findCrossing(reg1, regChallenger);
-    if (cross && cross.x > lastIdx && cross.date <= END_DATE) {
+    const mEnd = monthEndDate(chartMonth);
+    if (cross && cross.x > lastIdx && cross.date <= mEnd) {
       const today     = localDateStr();
       const daysUntil = Math.round((toDate(cross.date) - toDate(today)) / 86400000);
-      projVal  = `May ${cross.date.slice(5)}`;
+      const crossLabel = toDate(cross.date).toLocaleString('en-US', { month: 'short', day: 'numeric' });
+      projVal  = crossLabel;
       projSub  = `${projAtEnd.name} takes #1 · in ~${daysUntil}d`;
       if (daysUntil <= 5) projStyle = 'color:var(--neg)';
     } else {
-      projVal = `May 31`;
+      const endLabel = toDate(monthEndDate(chartMonth)).toLocaleString('en-US', { month: 'short', day: 'numeric' });
+      projVal = endLabel;
       projSub = `${projAtEnd.name} projected to lead`;
     }
   } else {
-    projVal = 'After May 31';
+    const endLabel = toDate(monthEndDate(chartMonth)).toLocaleString('en-US', { month: 'short', day: 'numeric' });
+    projVal = `After ${endLabel}`;
     projSub = `${leader.name} holds lead`;
   }
 
@@ -753,11 +846,26 @@ function renderSubtitle() {
 
 // ── Tabla ──────────────────────────────────────────────────────────────────
 function renderTable() {
-  const dates  = sorted();
+  const allSorted  = sorted();
+  const monthDates = allSorted.filter(d => d.startsWith(tableMonth));
+  const displayDates = tableExpanded ? monthDates : monthDates.slice(-5);
+
+  const expandBtn = document.getElementById('tableExpandBtn');
+  if (expandBtn) {
+    expandBtn.style.display  = monthDates.length > 5 ? '' : 'none';
+    expandBtn.textContent    = tableExpanded ? 'Collapse' : `Show all (${monthDates.length})`;
+  }
+
+  if (monthDates.length === 0) {
+    document.getElementById('tableContainer').innerHTML =
+      `<div style="padding:20px 0;color:var(--muted);font-size:12px">No data for this month.</div>`;
+    return;
+  }
+
   const ranked = getRanked().slice(0, TOP_N);
   const top1   = ranked[0];
   const top2   = ranked[1];
-  const cols   = ranked.length + 3; // date + artists + gap + edit
+  const cols   = ranked.length + 3;
 
   let html = `<div class="table-wrap"><table>
     <tr>
@@ -766,10 +874,11 @@ function renderTable() {
       <th>Gap #1-#2</th><th></th>
     </tr>`;
 
-  dates.forEach((date, i) => {
-    const d    = DATA[date];
-    const prev = i > 0 ? DATA[dates[i - 1]] : null;
-    const gap  = d[top1.key] != null && d[top2.key] != null ? d[top1.key] - d[top2.key] : null;
+  displayDates.forEach(date => {
+    const d       = DATA[date];
+    const dateIdx = allSorted.indexOf(date);
+    const prev    = dateIdx > 0 ? DATA[allSorted[dateIdx - 1]] : null;
+    const gap     = d[top1.key] != null && d[top2.key] != null ? d[top1.key] - d[top2.key] : null;
 
     html += `<tr>
       <td>${date.slice(5)}</td>
@@ -1056,6 +1165,8 @@ function updateAll() {
   buildMainChart();
   buildChangeChart();
   renderTable();
+  updateChartNav();
+  updateTableNav();
 }
 
 // ── Partículas ─────────────────────────────────────────────────────────────
